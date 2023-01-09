@@ -14,8 +14,6 @@ import datetime
 import time
 import psutil
 
-# install RealESRGAN
-
 from RealESRGANv030.interface import realEsrgan
 
 start_time = time.time()
