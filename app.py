@@ -180,16 +180,17 @@ def txt_to_img(model_path, prompt, neg_prompt, guidance, steps, width, height, g
     result.images[0].save(img_file)
     
     # enhance resolution
-    fp32 = True if device=='cpu' else False
-    result.images[0] = realEsrgan(
-                        input_dir = img_file,
-                        suffix = '',
-                        output_dir= "imgs",
-                        fp32 = fp32,
-                        outscale = scale_factor,
-                        tile = tile
-    )[0]
-    print('Complete')
+    if scale_factor>1:
+        fp32 = True if device=='cpu' else False
+        result.images[0] = realEsrgan(
+                            input_dir = img_file,
+                            suffix = '',
+                            output_dir= "imgs",
+                            fp32 = fp32,
+                            outscale = scale_factor,
+                            tile = tile
+        )[0]
+        print('Complete')
     
     return replace_nsfw_images(result)
 
@@ -235,16 +236,17 @@ def img_to_img(model_path, prompt, neg_prompt, img, strength, guidance, steps, w
     result.images[0].save("imgs/result-{}.png".format(datetime.datetime.now().strftime("%Y%m%d-%H%M%S")))
     
     # enhance resolution
-    fp32 = True if device=='cpu' else False
-    result.images[0] = realEsrgan(
-                        input_dir = img_file,
-                        suffix = '',
-                        output_dir= "imgs",
-                        fp32 = fp32,
-                        outscale = scale_factor,
-                        tile = tile
-    )[0]
-    print('Complete')
+    if scale_factor>1:
+        fp32 = True if device=='cpu' else False
+        result.images[0] = realEsrgan(
+                            input_dir = img_file,
+                            suffix = '',
+                            output_dir= "imgs",
+                            fp32 = fp32,
+                            outscale = scale_factor,
+                            tile = tile
+        )[0]
+        print('Complete')
     
     return replace_nsfw_images(result)
 
@@ -294,7 +296,7 @@ with gr.Blocks(css=css) as demo:
                     with gr.Group():
                         neg_prompt = gr.Textbox(label="Negative prompt", placeholder="What to exclude from the image")
 
-                image_out = gr.Image(height="auto")
+                image_out = gr.Image(height=512)
                 # gallery = gr.Gallery(
                 #     label="Generated images", show_label=False, elem_id="gallery"
                 # ).style(grid=[1], height="auto")
@@ -336,8 +338,7 @@ with gr.Blocks(css=css) as demo:
         custom_model_path.change(custom_model_changed, inputs=custom_model_path, outputs=None)
     # n_images.change(lambda n: gr.Gallery().style(grid=[2 if n > 1 else 1], height="auto"), inputs=n_images, outputs=gallery)
 
-    gr.Markdown('''### based on [Anything V3](https://huggingface.co/Linaqruf/anything-v3.0) and [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN)
-                ''')
+    gr.Markdown('''### based on [Anything V3](https://huggingface.co/Linaqruf/anything-v3.0) and [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN)''')
 
     inputs = [model_name, prompt, guidance, steps, width, height, seed, image, strength, neg_prompt, scale_factor, tile]
     outputs = [image_out, error_output]
