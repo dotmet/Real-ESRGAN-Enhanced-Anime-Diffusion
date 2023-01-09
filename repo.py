@@ -272,6 +272,7 @@ if __name__ == '__main__':
             print('Done.')
             break
         else:
+            print(f'\nGenerate anime picture {i} ...\n')
             inference(
                 args.model_name,
                 args.words,
