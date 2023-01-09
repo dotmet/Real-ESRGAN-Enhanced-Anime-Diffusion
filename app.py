@@ -194,6 +194,7 @@ def txt_to_img(model_path, prompt, neg_prompt, guidance, steps, width, height, g
                         outscale = scale_factor,
                         tile = tile
     )[0]
+    print('Complete')
     
     return replace_nsfw_images(result)
 
@@ -248,6 +249,7 @@ def img_to_img(model_path, prompt, neg_prompt, img, strength, guidance, steps, w
                         outscale = scale_factor,
                         tile = tile
     )[0]
+    print('Complete')
     
     return replace_nsfw_images(result)
 
