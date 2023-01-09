@@ -336,8 +336,7 @@ with gr.Blocks(css=css) as demo:
         custom_model_path.change(custom_model_changed, inputs=custom_model_path, outputs=None)
     # n_images.change(lambda n: gr.Gallery().style(grid=[2 if n > 1 else 1], height="auto"), inputs=n_images, outputs=gallery)
 
-    gr.Markdown('''### based on [Anything V3](https://huggingface.co/Linaqruf/anything-v3.0) 
-                and [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN)
+    gr.Markdown('''### based on [Anything V3](https://huggingface.co/Linaqruf/anything-v3.0) and [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN)
                 ''')
 
     inputs = [model_name, prompt, guidance, steps, width, height, seed, image, strength, neg_prompt, scale_factor, tile]
