@@ -267,12 +267,13 @@ if __name__ == '__main__':
 
     args = utils.parse_args()
     
+    n = args.n if args.n>0 else 114514
     for i in range(114514):
-        if i>args.n:
-            print('Done.')
+        if i>=n:
+            print('--- Task done ---')
             break
         else:
-            print(f'\nGenerate anime picture {i} ...\n')
+            print(f'\nGenerating image {i} ...\n')
             inference(
                 args.model_name,
                 args.words,
