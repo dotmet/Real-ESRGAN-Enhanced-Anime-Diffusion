@@ -267,8 +267,8 @@ with gr.Blocks(css=css) as demo:
     gr.Markdown('# RealESRGAN enhanced Anime Diffusion')
     gr.Markdown(
         "## Author: [dotmet](https://github.com/dotmet)  Github:[Github](https://github.com/dotmet/Real-ESRGAN-Enhanced-Anime-Diffusion)")
-    gr.Markdown(
-        "### You can duplicate this demo on HuggingFace Spaces, click [here](https://huggingface.co/spaces/yangheng/Super-Resolution-Anime-Diffusion?duplicate=true)")
+#     gr.Markdown(
+#         "### You can duplicate this demo on HuggingFace Spaces, click [here](https://huggingface.co/spaces/yangheng/Super-Resolution-Anime-Diffusion?duplicate=true)")
 
     with gr.Row():
         with gr.Column(scale=55):
