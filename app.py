@@ -14,6 +14,9 @@ import datetime
 import time
 import psutil
 
+# install RealESRGAN
+os.system('cd RealESRGANv030 && python setup.py develop')
+
 from RealESRGANv030.interface import realEsrgan
 
 # magnifier = ImageMagnifier()
