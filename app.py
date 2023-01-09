@@ -19,8 +19,6 @@ os.system('cd RealESRGANv030 && python setup.py develop')
 
 from RealESRGANv030.interface import realEsrgan
 
-# magnifier = ImageMagnifier()
-
 start_time = time.time()
 is_colab = utils.is_google_colab()
 
