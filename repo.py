@@ -1,3 +1,4 @@
+
 import os
 import random
 
@@ -14,14 +15,13 @@ import datetime
 import time
 import psutil
 
-from Waifu2x.magnify import ImageMagnifier
+from RealESRGANv030.interface import realEsrgan
 
 start_time = time.time()
 is_colab = utils.is_google_colab()
 
 device = autocuda.auto_cuda()
-
-magnifier = ImageMagnifier()
+dtype = torch.float16 if device != 'cpu' else torch.float32
 
 class Model:
     def __init__(self, name, path="", prefix=""):
@@ -33,7 +33,6 @@ class Model:
 
 
 models = [
-    # Model("anything v3", "anything-v3.0", "anything v3 style"),
     Model("anything v3", "Linaqruf/anything-v3.0", "anything v3 style"),
 ]
 #  Model("Spider-Verse", "nitrosocke/spider-verse-diffusion", "spiderverse style "),
@@ -67,33 +66,34 @@ current_model = models[1] if is_colab else models[0]
 current_model_path = current_model.path
 
 if is_colab:
-    pipe = StableDiffusionPipeline.from_pretrained(current_model.path, torch_dtype=torch.float16, scheduler=scheduler,
+    pipe = StableDiffusionPipeline.from_pretrained(current_model.path, torch_dtype=dtype, scheduler=scheduler,
                                                    safety_checker=lambda images, clip_input: (images, False))
 
 else:  # download all models
     print(f"{datetime.datetime.now()} Downloading vae...")
-    vae = AutoencoderKL.from_pretrained(current_model.path, subfolder="vae", torch_dtype=torch.float32
-    )
+    vae = AutoencoderKL.from_pretrained(current_model.path, subfolder="vae", torch_dtype=dtype)
     for model in models:
         try:
             print(f"{datetime.datetime.now()} Downloading {model.name} model...")
-            unet = UNet2DConditionModel.from_pretrained(model.path, subfolder="unet", torch_dtype=torch.float32
-            )
+            unet = UNet2DConditionModel.from_pretrained(model.path, subfolder="unet", torch_dtype=dtype)
             model.pipe_t2i = StableDiffusionPipeline.from_pretrained(model.path, unet=unet, vae=vae,
-                                                                     torch_dtype=torch.float32, 
-                                                                     scheduler=scheduler)
-#            model.pipe_i2i = StableDiffusionImg2ImgPipeline.from_pretrained(model.path, unet=unet, vae=vae,
-#                                                                            torch_dtype=torch.float32,
-#                                                                            scheduler=scheduler)
+                                                                     torch_dtype=dtype, scheduler=scheduler,
+                                                                     safety_checker=None)
+            model.pipe_i2i = StableDiffusionImg2ImgPipeline.from_pretrained(model.path, unet=unet, vae=vae,
+                                                                            torch_dtype=dtype,
+                                                                            scheduler=scheduler, safety_checker=None)
         except Exception as e:
             print(f"{datetime.datetime.now()} Failed to load model " + model.name + ": " + str(e))
             models.remove(model)
     pipe = models[0].pipe_t2i
 
+# model.pipe_i2i = torch.compile(model.pipe_i2i)
+# model.pipe_t2i = torch.compile(model.pipe_t2i)
 if torch.cuda.is_available():
     pipe = pipe.to(device)
 
-device = "GPU 🔥" if torch.cuda.is_available() else "CPU 🥶"
+
+# device = "GPU 🔥" if torch.cuda.is_available() else "CPU 🥶"
 
 
 def error_str(error, title="Error"):
@@ -116,29 +116,37 @@ def on_model_change(model_name):
 
 
 def inference(model_name, prompt, guidance, steps, width=512, height=512, seed=0, img=None, strength=0.5,
-              neg_prompt=""):
-    print(psutil.virtual_memory())  # print memory usage
+              neg_prompt="", scale_factor=4, tile=200, out_dir='imgs'):
 
+    fprint(psutil.virtual_memory())  # print memory usage
+    prompt = 'detailed fingers, beautiful hands,' + prompt
+    fprint(f"Prompt: {prompt}")
     global current_model
     for model in models:
         if model.name == model_name:
             current_model = model
             model_path = current_model.path
 
-    generator = torch.Generator('cuda').manual_seed(seed) if seed != 0 else None
-
+    generator = torch.Generator(device).manual_seed(seed) if seed != 0 else None
+    
+    img = None if len(img.split())==0 else img
     try:
         if img is not None:
             return img_to_img(model_path, prompt, neg_prompt, img, strength, guidance, steps, width, height,
-                              generator), None
+                              generator, scale_factor, tile, out_dir), None
         else:
-            return txt_to_img(model_path, prompt, neg_prompt, guidance, steps, width, height, generator), None
+            return txt_to_img(model_path, prompt, neg_prompt, guidance, steps, width, height, generator,
+                              scale_factor, tile, out_dir), None
     except Exception as e:
-        fprint(e)
         return None, error_str(e)
+    # if img is not None:
+    #     return img_to_img(model_path, prompt, neg_prompt, img, strength, guidance, steps, width, height,
+    #                       generator, scale_factor), None
+    # else:
+    #     return txt_to_img(model_path, prompt, neg_prompt, guidance, steps, width, height, generator, scale_factor), None
 
 
-def txt_to_img(model_path, prompt, neg_prompt, guidance, steps, width, height, generator):
+def txt_to_img(model_path, prompt, neg_prompt, guidance, steps, width, height, generator, scale_factor, tile, out_dir):
     print(f"{datetime.datetime.now()} txt_to_img, model: {current_model.name}")
 
     global last_mode
@@ -148,11 +156,10 @@ def txt_to_img(model_path, prompt, neg_prompt, guidance, steps, width, height, g
         current_model_path = model_path
 
         if is_colab or current_model == custom_model:
-            pipe = StableDiffusionPipeline.from_pretrained(current_model_path, torch_dtype=torch.float32,
+            pipe = StableDiffusionPipeline.from_pretrained(current_model_path, torch_dtype=dtype,
                                                            scheduler=scheduler,
                                                            safety_checker=lambda images, clip_input: (images, False))
         else:
-            pipe = pipe.to("cpu")
             pipe = current_model.pipe_t2i
 
         if torch.cuda.is_available():
@@ -169,25 +176,30 @@ def txt_to_img(model_path, prompt, neg_prompt, guidance, steps, width, height, g
         width=width,
         height=height,
         generator=generator)
-    #result.images[0] = magnifier.magnify(result.images[0])
-    #result.images[0] = magnifier.magnify(result.images[0])
+    # result.images[0] = magnifier.magnify(result.images[0], scale_factor=scale_factor)
 
     # save image
-    result.images[0].save("{}/{}.{}.{}.{}.{}.{}.{}.{}.png".format(saved_path,
-                                                                  datetime.datetime.now().strftime("%Y%m%d-%H%M%S"),
-                                                                  model_name,
-                                                                  prompt,
-                                                                  guidance,
-                                                                  steps,
-                                                                  width,
-                                                                  height,
-                                                                  seed)
-                          )
+    img_file = "imgs/result-{}.png".format(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+    result.images[0].save(img_file)
+    
+    # enhance resolution
+    if scale_factor>1:
+        fp32 = True if device=='cpu' else False
+        result.images[0] = realEsrgan(
+                            input_dir = img_file,
+                            suffix = '',
+                            output_dir= out_dir,
+                            fp32 = fp32,
+                            outscale = scale_factor,
+                            tile = tile
+        )[0]
+        print('Complete')
+    
     return replace_nsfw_images(result)
 
 
-def img_to_img(model_path, prompt, neg_prompt, img, strength, guidance, steps, width, height, generator):
-    print(f"{datetime.datetime.now()} img_to_img, model: {model_path}")
+def img_to_img(model_path, prompt, neg_prompt, img, strength, guidance, steps, width, height, generator, scale_factor, tile, out_dir):
+    fprint(f"{datetime.datetime.now()} img_to_img, model: {model_path}")
 
     global last_mode
     global pipe
@@ -196,12 +208,12 @@ def img_to_img(model_path, prompt, neg_prompt, img, strength, guidance, steps, w
         current_model_path = model_path
 
         if is_colab or current_model == custom_model:
-            pipe = StableDiffusionImg2ImgPipeline.from_pretrained(current_model_path, torch_dtype=torch.float32,
+            pipe = StableDiffusionImg2ImgPipeline.from_pretrained(current_model_path, torch_dtype=dtype,
                                                                   scheduler=scheduler,
                                                                   safety_checker=lambda images, clip_input: (
-                                                                  images, False))
+                                                                      images, False))
         else:
-            pipe = pipe.to("cpu")
+            # pipe = pipe.to("cpu")
             pipe = current_model.pipe_i2i
 
         if torch.cuda.is_available():
@@ -215,68 +227,64 @@ def img_to_img(model_path, prompt, neg_prompt, img, strength, guidance, steps, w
         prompt,
         negative_prompt=neg_prompt,
         # num_images_per_prompt=n_images,
-        init_image=img,
+        image=img,
         num_inference_steps=int(steps),
         strength=strength,
         guidance_scale=guidance,
-        width=width,
-        height=height,
+        # width=width,
+        # height=height,
         generator=generator)
-    result.images[0] = magnifier.magnify(result.images[0])
-    result.images[0] = magnifier.magnify(result.images[0])
-
+    
     # save image
-    result.images[0].save("{}/{}.{}.{}.{}.{}.{}.{}.{}.png".format(saved_path,
-                                                                  datetime.datetime.now().strftime("%Y%m%d-%H%M%S"),
-                                                                  model_name,
-                                                                  prompt,
-                                                                  guidance,
-                                                                  steps,
-                                                                  width,
-                                                                  height,
-                                                                  seed)
-                          )
+    result.images[0].save("imgs/result-{}.png".format(datetime.datetime.now().strftime("%Y%m%d-%H%M%S")))
+    
+    # enhance resolution
+    if scale_factor>1:
+        fp32 = True if device=='cpu' else False
+        result.images[0] = realEsrgan(
+                            input_dir = img_file,
+                            suffix = '',
+                            output_dir= "imgs",
+                            fp32 = fp32,
+                            outscale = scale_factor,
+                            tile = tile
+        )[0]
+        print('Complete')
+    
     return replace_nsfw_images(result)
 
 
 def replace_nsfw_images(results):
     if is_colab:
         return results.images[0]
-
-    for i in range(len(results.images)):
-        if results.nsfw_content_detected[i]:
-            results.images[i] = Image.open("nsfw.png")
+    if hasattr(results, "nsfw_content_detected") and results.nsfw_content_detected:
+        for i in range(len(results.images)):
+            if results.nsfw_content_detected[i]:
+                results.images[i] = Image.open("nsfw.png")
     return results.images[0]
+    
+if __name__ == '__main__':
 
-
-if __name__ == "__main__":
-    # inference("DALL-E", "a dog", 0, 1000, 512, 512, 0, None, 0.5, "")
-    model_name = "anything v3"
-    saved_path = r"imgs"
-    if not os.path.exists(saved_path):
-        os.mkdir(saved_path)
-    n = 0
-    while True:
-        prompt_keys = [
-            'beautiful eyes', 'cumulonimbus clouds', 'sky', 'detailed fingers',
-            random.choice(['white hair', 'red hair', 'blonde hair', 'black hair', 'green hair', ]),
-            random.choice(['blue eyes', 'green eyes', 'red eyes', 'black eyes', 'yellow eyes', ]),
-            random.choice(['flower meadow', 'garden', 'city', 'river', 'beach']),
-            random.choice(['Elif', 'Angel'])
-        ]
-        guidance = 7.5
-        steps = 25
-        # width = 1024
-        # height = 1024
-        # width = 768
-        # height = 1024
-        width = 512
-        height = 888
-        seed = 0
-        img = None
-        strength = 0.5
-        neg_prompt = ""
-        inference(model_name, '.'.join(prompt_keys), guidance, steps, width=width, height=height, seed=seed, img=img,
-                  strength=strength, neg_prompt=neg_prompt)
-        n += 1
-        fprint(n)
+    args = utils.parse_args()
+    
+    for i in range(114514):
+        if i>args.n:
+            print('Done.')
+            break
+        else:
+            inference(
+                args.model_name,
+                args.words,
+                args.guidance,
+                args.gen_steps,
+                args.width,
+                args.height,
+                args.seed,
+                args.image,
+                args.strength,
+                args.neg_words,
+                args.scale,
+                args.tile,
+                args.out_dir,
+            )
+            inference()

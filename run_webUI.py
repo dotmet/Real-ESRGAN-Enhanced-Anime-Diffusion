@@ -1,13 +1,8 @@
 import os
-
-def check_RealESRGAN():
-    try:
-        from RealESRGANv030.interface import realEsrgan
-    except:
-        os.system('cd RealESRGANv030 && python setup.py develop')
+import utils
         
 if __name__ == '__main__':
-    check_RealESRGAN()
+    utils.check_RealESRGAN()
     status = os.system('python app.py')
     if status==256:
         print('Run failed, try set MKL_THREADING_LAYER=GNU\n')
