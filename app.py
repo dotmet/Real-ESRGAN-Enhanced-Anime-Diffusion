@@ -286,14 +286,22 @@ with gr.Blocks(css=css) as demo:
                         "<div><font size='2'>Custom models have to be downloaded first, so give it some time.</font></div>")
 
                 with gr.Row():
-                    prompt = gr.Textbox(label="Prompt", show_label=False, max_lines=2,
+                    prompt = gr.Textbox(label="Prompt", show_label=False, max_lines=10,
+                                        value = "1girl, brown hair, green eyes, colorful, autumn, \
+cumulonimbus clouds, lighting, blue sky, falling leaves, garden",
                                         placeholder="Enter prompt. Style applied automatically").style(container=False)
                 with gr.Row():
                     generate = gr.Button(value="Generate")
 
                 with gr.Row():
                     with gr.Group():
-                        neg_prompt = gr.Textbox(label="Negative prompt", placeholder="What to exclude from the image")
+                        neg_prompt = gr.Textbox(label="Negative prompt", 
+                                                max_lines=10,
+                                                value = "lowers, bad anatomy, bad hands, text, error, \
+missing fingers, extra digit, fewer digits, cropped, worst quality, \
+low quality, normal quality, jpeg artifacts, signature, watermark, \
+username, blurry, artist name, bad feet",
+                                                placeholder="What to exclude from the image")
 
                 image_out = gr.Image(height=512)
                 # gallery = gr.Gallery(
