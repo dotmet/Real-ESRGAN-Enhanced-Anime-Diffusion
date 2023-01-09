@@ -294,7 +294,7 @@ with gr.Blocks(css=css) as demo:
                     with gr.Group():
                         neg_prompt = gr.Textbox(label="Negative prompt", placeholder="What to exclude from the image")
 
-                image_out = gr.Image(height=512)
+                image_out = gr.Image(height="auto")
                 # gallery = gr.Gallery(
                 #     label="Generated images", show_label=False, elem_id="gallery"
                 # ).style(grid=[1], height="auto")
