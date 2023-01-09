@@ -135,3 +135,5 @@ gfpgan/
 
 # Generated images
 imgs/
+inputs/
+results/
