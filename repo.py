@@ -120,7 +120,7 @@ def inference(model_name, prompt, guidance, steps, width=512, height=512, seed=0
 
     fprint(psutil.virtual_memory())  # print memory usage
     prompt = 'detailed fingers, beautiful hands,' + prompt
-    fprint(f"Prompt: {prompt}")
+    fprint(f"\nPrompt: {prompt}")
     global current_model
     for model in models:
         if model.name == model_name:
