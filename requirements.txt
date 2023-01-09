@@ -10,6 +10,7 @@ git+https://github.com/huggingface/transformers.git
 ftfy
 accelerate
 psutil
+gradio
 
 # requirements for RealESRGAN
 basicsr>=1.4.2
