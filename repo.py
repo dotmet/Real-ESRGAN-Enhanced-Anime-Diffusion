@@ -287,4 +287,3 @@ if __name__ == '__main__':
                 args.tile,
                 args.out_dir,
             )
-            inference()
