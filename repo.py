@@ -272,7 +272,7 @@ if __name__ == '__main__':
             print('--- Task done ---')
             break
         else:
-            print(f'\nGenerating image {i} ...\n')
+            print(f'\nGenerating image {i+1} ...\n')
             inference(
                 args.model_name,
                 args.words,
