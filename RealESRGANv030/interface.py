@@ -1,4 +1,5 @@
 import cv2
+from PIL import Image
 import glob
 import os
 from basicsr.archs.rrdbnet_arch import RRDBNet
@@ -97,10 +98,11 @@ def realEsrgan(model_name="RealESRGAN_x4plus_anime_6B",
         paths = [input_dir]
     else:
         paths = sorted(glob.glob(os.path.join(input_dir, '*')))
-
+    
+    Imgs = []
     for idx, path in enumerate(paths):
         imgname, extension = os.path.splitext(os.path.basename(path))
-        print('Enhancing resolution:', idx, imgname)
+        print('Enhancing the resolution:', idx, imgname)
 
         img = cv2.imread(path, cv2.IMREAD_UNCHANGED)
         if len(img.shape) == 3 and img.shape[2] == 4:
@@ -127,4 +129,11 @@ def realEsrgan(model_name="RealESRGAN_x4plus_anime_6B",
                 save_path = os.path.join(output_dir, f'{imgname}.{extension}')
             else:
                 save_path = os.path.join(output_dir, f'{imgname}_{suffix}.{extension}')
+            
             cv2.imwrite(save_path, output)
+            
+            img = Image.fromarray(output.astype('uint8'), 'RGB')
+            Imgs.append(img)
+
+    return Imgs    
+            

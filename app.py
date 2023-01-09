@@ -13,18 +13,16 @@ import utils
 import datetime
 import time
 import psutil
-from Waifu2x.magnify import ImageMagnifier
 
-magnifier = ImageMagnifier()
+from RealESRGANv030.interface import realEsrgan
+
+# magnifier = ImageMagnifier()
 
 start_time = time.time()
 is_colab = utils.is_google_colab()
 
 device = autocuda.auto_cuda()
-
 dtype = torch.float16 if device != 'cpu' else torch.float32
-dtype = torch.float32
-
 
 class Model:
     def __init__(self, name, path="", prefix=""):
@@ -119,7 +117,7 @@ def on_model_change(model_name):
 
 
 def inference(model_name, prompt, guidance, steps, width=512, height=512, seed=0, img=None, strength=0.5,
-              neg_prompt="", scale_factor=2):
+              neg_prompt="", scale_factor=2, tile=200):
     fprint(psutil.virtual_memory())  # print memory usage
     prompt = 'detailed fingers, beautiful hands,' + prompt
     fprint(f"Prompt: {prompt}")
@@ -134,10 +132,10 @@ def inference(model_name, prompt, guidance, steps, width=512, height=512, seed=0
     try:
         if img is not None:
             return img_to_img(model_path, prompt, neg_prompt, img, strength, guidance, steps, width, height,
-                              generator, scale_factor), None
+                              generator, scale_factor, tile), None
         else:
             return txt_to_img(model_path, prompt, neg_prompt, guidance, steps, width, height, generator,
-                              scale_factor), None
+                              scale_factor, tile), None
     except Exception as e:
         return None, error_str(e)
     # if img is not None:
@@ -147,7 +145,7 @@ def inference(model_name, prompt, guidance, steps, width=512, height=512, seed=0
     #     return txt_to_img(model_path, prompt, neg_prompt, guidance, steps, width, height, generator, scale_factor), None
 
 
-def txt_to_img(model_path, prompt, neg_prompt, guidance, steps, width, height, generator, scale_factor):
+def txt_to_img(model_path, prompt, neg_prompt, guidance, steps, width, height, generator, scale_factor, tile):
     print(f"{datetime.datetime.now()} txt_to_img, model: {current_model.name}")
 
     global last_mode
@@ -161,7 +159,6 @@ def txt_to_img(model_path, prompt, neg_prompt, guidance, steps, width, height, g
                                                            scheduler=scheduler,
                                                            safety_checker=lambda images, clip_input: (images, False))
         else:
-            # pipe = pipe.to("cpu")
             pipe = current_model.pipe_t2i
 
         if torch.cuda.is_available():
@@ -178,14 +175,29 @@ def txt_to_img(model_path, prompt, neg_prompt, guidance, steps, width, height, g
         width=width,
         height=height,
         generator=generator)
-    result.images[0] = magnifier.magnify(result.images[0], scale_factor=scale_factor)
+    # result.images[0] = magnifier.magnify(result.images[0], scale_factor=scale_factor)
 
     # save image
-    result.images[0].save("imgs/result-{}.png".format(datetime.datetime.now().strftime("%Y%m%d-%H%M%S")))
+    img_file = "imgs/result-{}.png".format(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+    result.images[0].save(img_file)
+    print(result)
+    print(type(result))
+    
+    # enhance resolution
+    fp32 = True if device=='cpu' else False
+    result.images[0] = realEsrgan(
+                        input_dir = img_file,
+                        suffix = '',
+                        output_dir= "imgs",
+                        fp32 = fp32,
+                        outscale = scale_factor,
+                        tile = tile
+    )[0]
+    
     return replace_nsfw_images(result)
 
 
-def img_to_img(model_path, prompt, neg_prompt, img, strength, guidance, steps, width, height, generator, scale_factor):
+def img_to_img(model_path, prompt, neg_prompt, img, strength, guidance, steps, width, height, generator, scale_factor, tile):
     fprint(f"{datetime.datetime.now()} img_to_img, model: {model_path}")
 
     global last_mode
@@ -238,18 +250,14 @@ def replace_nsfw_images(results):
     return results.images[0]
 
 
-css = """.finetuned-diffusion-div div{display:inline-flex;align-items:center;gap:.8rem;font-size:1.75rem}.finetuned-diffusion-div div h1{font-weight:900;margin-bottom:7px}.finetuned-diffusion-div p{margin-bottom:10px;font-size:94%}a{text-decoration:underline}.tabs{margin-top:0;margin-bottom:0}#gallery{min-height:20rem}
-"""
+css = 'style.css'
 with gr.Blocks(css=css) as demo:
     if not os.path.exists('imgs'):
         os.mkdir('imgs')
 
-    gr.Markdown('# Super Resolution Anime Diffusion')
+    gr.Markdown('# RealESRGAN enhanced Anime Diffusion')
     gr.Markdown(
-        "## Author: [yangheng95](https://github.com/yangheng95)  Github:[Github](https://github.com/yangheng95/SuperResolutionAnimeDiffusion)")
-    gr.Markdown("### This demo is running on a CPU, so it will take at least 20 minutes. "
-                "If you have a GPU, you can clone from [Github](https://github.com/yangheng95/SuperResolutionAnimeDiffusion) and run it locally.")
-    gr.Markdown("### FYI: to generate a 512*512 image and magnify 4x, it only takes 5~8 seconds on a RTX 2080 GPU")
+        "## Author: [dotmet](https://github.com/dotmet)  Github:[Github](https://github.com/dotmet/Real-ESRGAN-Enhanced-Anime-Diffusion)")
     gr.Markdown(
         "### You can duplicate this demo on HuggingFace Spaces, click [here](https://huggingface.co/spaces/yangheng/Super-Resolution-Anime-Diffusion?duplicate=true)")
 
@@ -305,20 +313,25 @@ with gr.Blocks(css=css) as demo:
                             width = gr.Slider(label="Width", value=512, minimum=64, maximum=1024, step=8)
                             height = gr.Slider(label="Height", value=512, minimum=64, maximum=1024, step=8)
                         with gr.Row():
-                            scale_factor = gr.Slider(1, 8, label='Scale factor (to magnify image) (1, 2, 4, 8)',
-                                                     value=1,
-                                                     step=1)
-
-                        seed = gr.Slider(0, 2147483647, label='Seed (0 = random)', value=0, step=1)
+                            scale_factor = gr.Slider(label='Scale factor (to magnify image) (1, 2, 4, 8)',
+                                                     value=1, minimum=1, maximum=8, step=1)             
+                        with gr.Row():
+                            tile = gr.Slider(label='''Tile for magnify 
+                                             (depend on the memory of your device, 0=no tile)''', 
+                                             value=0, minimum=0, maximum=10000, step=10)
+                        with gr.Row():
+                            seed = gr.Slider(0, 114514, label='Random Seed (0 = random)', value=0, step=1)
 
     if is_colab:
         model_name.change(on_model_change, inputs=model_name, outputs=[custom_model_group, prompt], queue=False)
         custom_model_path.change(custom_model_changed, inputs=custom_model_path, outputs=None)
     # n_images.change(lambda n: gr.Gallery().style(grid=[2 if n > 1 else 1], height="auto"), inputs=n_images, outputs=gallery)
 
-    gr.Markdown("### based on [Anything V3](https://huggingface.co/Linaqruf/anything-v3.0)")
+    gr.Markdown('''### based on [Anything V3](https://huggingface.co/Linaqruf/anything-v3.0) 
+                and [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN)
+                ''')
 
-    inputs = [model_name, prompt, guidance, steps, width, height, seed, image, strength, neg_prompt, scale_factor]
+    inputs = [model_name, prompt, guidance, steps, width, height, seed, image, strength, neg_prompt, scale_factor, tile]
     outputs = [image_out, error_output]
     prompt.submit(inference, inputs=inputs, outputs=outputs)
     generate.click(inference, inputs=inputs, outputs=outputs, api_name="generate")

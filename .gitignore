@@ -132,3 +132,6 @@ dmypy.json
 # Local cached pretrained weigths
 .pth
 gfpgan/
+
+# Generated images
+imgs/
