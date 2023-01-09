@@ -117,8 +117,7 @@ def on_model_change(model_name):
 def inference(model_name, prompt, guidance, steps, width=512, height=512, seed=0, img=None, strength=0.5,
               neg_prompt="", scale_factor=2, tile=200):
     fprint(psutil.virtual_memory())  # print memory usage
-    prompt = 'detailed fingers, beautiful hands,' + prompt
-    fprint(f"Prompt: {prompt}")
+    fprint(f"\nPrompt: {prompt}")
     global current_model
     for model in models:
         if model.name == model_name:
@@ -144,7 +143,7 @@ def inference(model_name, prompt, guidance, steps, width=512, height=512, seed=0
 
 
 def txt_to_img(model_path, prompt, neg_prompt, guidance, steps, width, height, generator, scale_factor, tile):
-    print(f"{datetime.datetime.now()} txt_to_img, model: {current_model.name}")
+    print(f"{datetime.datetime.now()} \ntxt_to_img, model: {current_model.name}")
 
     global last_mode
     global pipe
@@ -196,7 +195,7 @@ def txt_to_img(model_path, prompt, neg_prompt, guidance, steps, width, height, g
 
 
 def img_to_img(model_path, prompt, neg_prompt, img, strength, guidance, steps, width, height, generator, scale_factor, tile):
-    fprint(f"{datetime.datetime.now()} img_to_img, model: {model_path}")
+    fprint(f"{datetime.datetime.now()} \nimg_to_img, model: {model_path}")
 
     global last_mode
     global pipe
