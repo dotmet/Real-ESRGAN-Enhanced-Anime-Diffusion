@@ -345,14 +345,8 @@ with gr.Blocks(css=css) as demo:
     prompt.submit(inference, inputs=inputs, outputs=outputs)
     generate.click(inference, inputs=inputs, outputs=outputs, api_name="generate")
 
-    prompt_keys = [
-        'girl', 'lovely', 'cute', 'beautiful eyes', 'cumulonimbus clouds', 'detailed fingers',
-        random.choice(['dress']),
-        random.choice(['white hair']),
-        random.choice(['blue eyes']),
-        random.choice(['flower meadow']),
-        random.choice(['Elif', 'Angel'])
-    ]
+    prompt_keys = ['1girl', 'brown hair', 'green eyes', 'colorful', 'autumn', 
+                    'cumulonimbus clouds', 'lighting, blue sky', 'falling leaves', 'garden']
     prompt.value = ','.join(prompt_keys)
     ex = gr.Examples([
         [models[0].name, prompt.value, 7.5, 15],
