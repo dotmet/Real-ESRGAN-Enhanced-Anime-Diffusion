@@ -23,7 +23,15 @@ install depencies
   pip install -r requirements.txt
 ```
 
+## Run
+
+```bash
+  python inference.py
+```
+  Type ```python inference.py -h``` in command line to see more options.
+  
 ## Run Web UI
+
 ```
   python run_webUI.py
 ```
