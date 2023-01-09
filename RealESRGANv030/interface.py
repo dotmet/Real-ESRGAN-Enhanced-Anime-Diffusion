@@ -102,7 +102,7 @@ def realEsrgan(model_name="RealESRGAN_x4plus_anime_6B",
     Imgs = []
     for idx, path in enumerate(paths):
         imgname, extension = os.path.splitext(os.path.basename(path))
-        print('Enhancing the resolution:', idx, imgname)
+        print(f'Scaling x{outscale}:', path)
 
         img = cv2.imread(path, cv2.IMREAD_UNCHANGED)
         if len(img.shape) == 3 and img.shape[2] == 4:
