@@ -6,7 +6,7 @@ def check_RealESRGAN():
     except:
         os.system('cd RealESRGANv030 && python setup.py develop')
         
-if name=='__main__':
+if __name__ == '__main__':
     check_RealESRGAN()
     status = os.system('python app.py')
     if status==256:
