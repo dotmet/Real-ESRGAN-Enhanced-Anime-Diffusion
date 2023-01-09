@@ -183,8 +183,6 @@ def txt_to_img(model_path, prompt, neg_prompt, guidance, steps, width, height, g
     # save image
     img_file = "imgs/result-{}.png".format(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
     result.images[0].save(img_file)
-    print(result)
-    print(type(result))
     
     # enhance resolution
     fp32 = True if device=='cpu' else False
@@ -236,10 +234,21 @@ def img_to_img(model_path, prompt, neg_prompt, img, strength, guidance, steps, w
         # width=width,
         # height=height,
         generator=generator)
-    result.images[0] = magnifier.magnify(result.images[0], scale_factor=scale_factor)
-
+    
     # save image
     result.images[0].save("imgs/result-{}.png".format(datetime.datetime.now().strftime("%Y%m%d-%H%M%S")))
+    
+    # enhance resolution
+    fp32 = True if device=='cpu' else False
+    result.images[0] = realEsrgan(
+                        input_dir = img_file,
+                        suffix = '',
+                        output_dir= "imgs",
+                        fp32 = fp32,
+                        outscale = scale_factor,
+                        tile = tile
+    )[0]
+    
     return replace_nsfw_images(result)
 
 
