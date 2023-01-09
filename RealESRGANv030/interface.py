@@ -132,7 +132,7 @@ def realEsrgan(model_name="RealESRGAN_x4plus_anime_6B",
             
             cv2.imwrite(save_path, output)
             
-            img = Image.fromarray(output.astype('uint8'), 'RGB')
+            img = Image.open(save_path)
             Imgs.append(img)
 
     return Imgs    
