@@ -1,3 +1,14 @@
+# ignored folders
+datasets/*
+experiments/*
+results/*
+tb_logger/*
+wandb/*
+tmp/*
+weights/*
+
+version.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -127,7 +138,3 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-
-# Local cached pretrained weigths
-.pth
-gfpgan/
