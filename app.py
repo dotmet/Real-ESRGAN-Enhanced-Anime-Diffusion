@@ -217,21 +217,20 @@ def img_to_img(model_path, prompt, neg_prompt, img, strength, guidance, steps, w
         last_mode = "img2img"
 
     prompt = current_model.prefix + prompt
-    with Image.open(img) as img:
-        ratio = min(height / img.height, width / img.width)
-        img = img.resize((int(img.width * ratio), int(img.height * ratio)), Image.LANCZOS)
-        result = pipe(
-            prompt,
-            negative_prompt=neg_prompt,
-            # num_images_per_prompt=n_images,
-            image=img,
-            num_inference_steps=int(steps),
-            strength=strength,
-            guidance_scale=guidance,
-            # width=width,
-            # height=height,
-            generator=generator)
-    
+    ratio = min(height / img.height, width / img.width)
+    img = img.resize((int(img.width * ratio), int(img.height * ratio)), Image.LANCZOS)
+    result = pipe(
+        prompt,
+        negative_prompt=neg_prompt,
+        # num_images_per_prompt=n_images,
+        image=img,
+        num_inference_steps=int(steps),
+        strength=strength,
+        guidance_scale=guidance,
+        # width=width,
+        # height=height,
+        generator=generator)
+
     # save image
     img_file = "imgs/result-{}.png".format(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
     result.images[0].save(img_file)
