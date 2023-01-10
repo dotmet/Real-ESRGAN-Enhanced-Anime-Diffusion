@@ -1,3 +1,5 @@
+import utils
+args = utils.parse_args()
 
 import os
 import random
@@ -11,7 +13,7 @@ from diffusers import AutoencoderKL, UNet2DConditionModel, StableDiffusionPipeli
 import gradio as gr
 import torch
 from PIL import Image
-import utils
+
 import datetime
 import time
 import psutil
@@ -287,7 +289,7 @@ def split_text(file=None, text=None, marker='\n'):
     
 if __name__ == '__main__':
 
-    args = utils.parse_args()
+
     
     n = args.n if args.n>0 else 114514
     img = args.image
