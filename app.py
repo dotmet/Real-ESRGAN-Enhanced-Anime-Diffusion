@@ -337,7 +337,7 @@ username, blurry, artist name, bad feet",
                         with gr.Row():
                             tile = gr.Slider(label='''Tile for magnify 
                                              (depend on the memory of your device, 0=no tile)''', 
-                                             value=0, minimum=0, maximum=10000, step=10)
+                                             value=200, minimum=0, maximum=10000, step=10)
                         with gr.Row():
                             seed = gr.Slider(0, 114514, label='Random Seed (0 = random)', value=0, step=1)
 
