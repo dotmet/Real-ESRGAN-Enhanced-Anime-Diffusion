@@ -249,7 +249,7 @@ def img_to_img(model_path, prompt, neg_prompt, img, strength, guidance, steps,
     if scale_factor>1:
         fp32 = True if device=='cpu' else False
         result.images[0] = realEsrgan(
-                            input_dir = img_file,
+                            input_dir = img_path,
                             suffix = '',
                             output_dir= out_dir,
                             fp32 = fp32,
