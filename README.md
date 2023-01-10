@@ -33,5 +33,5 @@ install depencies
 ## Run Web UI
 
 ```
-  python run_webUI.py
+  python app.py
 ```
