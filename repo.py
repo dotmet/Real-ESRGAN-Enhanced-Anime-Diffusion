@@ -129,7 +129,8 @@ def inference(model_name, prompt, guidance, steps, width=512, height=512, seed=0
 
     generator = torch.Generator(device).manual_seed(seed) if seed != 0 else None
     
-    img = None if len(img.split())==0 else img
+    if img is not None:
+        img = None if len(img.split())==0 else img
     try:
         if img is not None:
             return img_to_img(model_path, prompt, neg_prompt, img, strength, guidance, steps, width, height,
@@ -263,6 +264,20 @@ def replace_nsfw_images(results):
                 results.images[i] = Image.open("nsfw.png")
     return results.images[0]
     
+def split_text(file=None, text=None, marker='\n'):
+    if file is not None:
+        if os.path.isfile(file):
+            with open(file, 'r') as f:
+                text = f.read()
+        else:
+            text = file
+    collection = []
+    texts = text.split(marker)
+    for txt in texts:
+        if len(txt)>0:
+            collection.append(txt)
+    return collection
+    
 if __name__ == '__main__':
 
     args = utils.parse_args()
@@ -275,7 +290,10 @@ if __name__ == '__main__':
         else:
             images = sorted(glob.blob(os.path.join(img, "*")))
     else:
-        images = [None]*n
+        images = ['']*n
+    
+    prompt = split_text(args.words)
+    neg_prompt = split_text(args.neg_words)
         
     for i,image in zip(range(n), images):
         if i>=n:
@@ -285,7 +303,7 @@ if __name__ == '__main__':
             print(f'\nGenerating image {i+1} ...\n')
             inference(
                 args.model_name,
-                args.words,
+                random.choice(prompt),
                 args.guidance,
                 args.gen_steps,
                 args.width,
@@ -293,7 +311,7 @@ if __name__ == '__main__':
                 args.seed,
                 image,
                 args.strength,
-                args.neg_words,
+                random.choice(neg_prompt),
                 args.scale,
                 args.tile,
                 args.out_dir,

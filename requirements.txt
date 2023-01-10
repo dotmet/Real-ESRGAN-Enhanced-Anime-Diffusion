@@ -20,3 +20,4 @@ numpy
 opencv-python
 Pillow
 tqdm
+realesrgan
