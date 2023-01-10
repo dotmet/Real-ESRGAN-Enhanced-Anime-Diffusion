@@ -134,10 +134,10 @@ def inference(model_name, prompt, guidance, steps, width=512, height=512, seed=0
     try:
         if img is not None:
             return img_to_img(model_path, prompt, neg_prompt, img, strength, guidance, steps, width, height,
-                              generator, scale_factor, tile, out_dir), None
+                              generator, scale_factor, tile, out_dir, ext), None
         else:
             return txt_to_img(model_path, prompt, neg_prompt, guidance, steps, width, height, generator,
-                              scale_factor, tile, out_dir), None
+                              scale_factor, tile, out_dir, ext), None
     except Exception as e:
         return None, error_str(e)
     # if img is not None:
@@ -147,7 +147,8 @@ def inference(model_name, prompt, guidance, steps, width=512, height=512, seed=0
     #     return txt_to_img(model_path, prompt, neg_prompt, guidance, steps, width, height, generator, scale_factor), None
 
 
-def txt_to_img(model_path, prompt, neg_prompt, guidance, steps, width, height, generator, scale_factor, tile, out_dir):
+def txt_to_img(model_path, prompt, neg_prompt, guidance, steps, width, height, 
+               generator, scale_factor, tile, out_dir, ext='auto'):
     print(f"{datetime.datetime.now()} \ntxt_to_img, model: {current_model.name}")
 
     global last_mode
@@ -157,9 +158,11 @@ def txt_to_img(model_path, prompt, neg_prompt, guidance, steps, width, height, g
         current_model_path = model_path
 
         if is_colab or current_model == custom_model:
-            pipe = StableDiffusionPipeline.from_pretrained(current_model_path, torch_dtype=dtype,
+            pipe = StableDiffusionPipeline.from_pretrained(current_model_path, 
+                                                           torch_dtype=dtype,
                                                            scheduler=scheduler,
-                                                           safety_checker=lambda images, clip_input: (images, False))
+                                                           safety_checker=lambda images, 
+                                                           clip_input: (images, False))
         else:
             pipe = current_model.pipe_t2i
 
@@ -192,14 +195,16 @@ def txt_to_img(model_path, prompt, neg_prompt, guidance, steps, width, height, g
                             output_dir = out_dir,
                             fp32 = fp32,
                             outscale = scale_factor,
-                            tile = tile
+                            tile = tile,
+                            out_ext = ext,
         )[0]
         print('Rescale image complete')
     
     return replace_nsfw_images(result)
 
 
-def img_to_img(model_path, prompt, neg_prompt, img, strength, guidance, steps, width, height, generator, scale_factor, tile, out_dir):
+def img_to_img(model_path, prompt, neg_prompt, img, strength, guidance, steps, 
+               width, height, generator, scale_factor, tile, out_dir, ext):
     fprint(f"{datetime.datetime.now()} \nimg_to_img, model: {model_path}")
 
     global last_mode
@@ -245,11 +250,11 @@ def img_to_img(model_path, prompt, neg_prompt, img, strength, guidance, steps, w
         result.images[0] = realEsrgan(
                             input_dir = img_file,
                             suffix = '',
-                            output_dir= "imgs",
+                            output_dir= out_dir,
                             fp32 = fp32,
                             outscale = scale_factor,
-                            tile = tile
-        )[0]
+                            tile = tile,
+                            out_ext = ext,)
         print('Complete')
     
     return replace_nsfw_images(result)
