@@ -364,5 +364,5 @@ username, blurry, artist name, bad feet",
 print(f"Space built in {time.time() - start_time:.2f} seconds")
 
 if not is_colab:
-    demo.queue(concurrency_count=2)
+    demo.queue(concurrency_count=1)
 demo.launch(debug=is_colab, enable_queue=True, share=is_colab)
