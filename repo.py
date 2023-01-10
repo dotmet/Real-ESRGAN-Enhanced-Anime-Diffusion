@@ -1,6 +1,7 @@
 
 import os
 import random
+import glob
 
 import autocuda
 from pyabsa.utils.pyabsa_utils import fprint
@@ -116,7 +117,7 @@ def on_model_change(model_name):
 
 
 def inference(model_name, prompt, guidance, steps, width=512, height=512, seed=0, img=None, strength=0.5,
-              neg_prompt="", scale_factor=4, tile=200, out_dir='imgs'):
+              neg_prompt="", scale_factor=4, tile=200, out_dir='imgs', ext='auto'):
 
     fprint(psutil.virtual_memory())  # print memory usage
     fprint(f"\nPrompt: {prompt}")
@@ -187,7 +188,7 @@ def txt_to_img(model_path, prompt, neg_prompt, guidance, steps, width, height, g
         result.images[0] = realEsrgan(
                             input_dir = img_file,
                             suffix = '',
-                            output_dir= out_dir,
+                            output_dir = out_dir,
                             fp32 = fp32,
                             outscale = scale_factor,
                             tile = tile
@@ -267,7 +268,16 @@ if __name__ == '__main__':
     args = utils.parse_args()
     
     n = args.n if args.n>0 else 114514
-    for i in range(114514):
+    img = args.image
+    if img is not None and len(img.split())!=0:
+        if os.path.isfile(img):
+            images = [img]
+        else:
+            images = sorted(glob.blob(os.path.join(img, "*")))
+    else:
+        images = [None]*n
+        
+    for i,image in zip(range(n), images):
         if i>=n:
             print('--- Task done ---')
             break
@@ -281,10 +291,11 @@ if __name__ == '__main__':
                 args.width,
                 args.height,
                 args.seed,
-                args.image,
+                image,
                 args.strength,
                 args.neg_words,
                 args.scale,
                 args.tile,
                 args.out_dir,
+                args.extension,
             )
