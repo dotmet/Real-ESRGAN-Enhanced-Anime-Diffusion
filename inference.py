@@ -242,7 +242,8 @@ def img_to_img(model_path, prompt, neg_prompt, img, strength, guidance, steps,
         generator=generator)
     
     # save image
-    result.images[0].save("imgs/result-{}.png".format(datetime.datetime.now().strftime("%Y%m%d-%H%M%S")))
+    img_file = "imgs/result-{}.png".format(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+    result.images[0].save(img_file)
     
     # enhance resolution
     if scale_factor>1:
