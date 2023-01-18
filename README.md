@@ -30,7 +30,7 @@ install depencies
 ```
   Type ```python inference.py -h``` in command line to see more options.
   
-  The text are passed by ```-wd``` or ```--words```,  and this arg should be follow by one sentence or the name of a file which contains text(s). Notice that each text in the file should strictly be 1 line (The text in file will be automatically split by the symbol "\n"). Example usage:
+  The text is passed by ```-wd``` or ```--words```,  and this arg should be follow by one sentence or the name of a file which contains text(s). Notice that each text in the file should strictly be 1 line (The text in the file will be automatically splited by the symbol "\n"). Example usages:
   ```python inference.py -wd "1girl, beautiful eyes, "```, 
   ```python inference.py -wd prompt_keys.txt```
   
