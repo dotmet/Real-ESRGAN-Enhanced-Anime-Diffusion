@@ -29,7 +29,7 @@ def parse_args():
                         type = str,
                         default = "1girl, brown hair, green eyes, colorful, autumn, \
 cumulonimbus clouds, lighting, blue sky, falling leaves, garden",
-                        help = 'Text (prompt keys) used to generate anime image'
+                        help = 'Text (prompt keys) or the name of a file which contains text(s) used to generate anime image'
                         )
     parser.add_argument('-nwd', '--neg_words',
                         type = str,
