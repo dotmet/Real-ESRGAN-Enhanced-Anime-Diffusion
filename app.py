@@ -32,7 +32,7 @@ class Model:
 
 
 models = [
-    Model("anything v3", "Linaqruf/anything-v3.0", "anything v3 style"),
+    Model("anything v4", "andite/anything-v4.0", "anything v4 style"),
 ]
 #  Model("Spider-Verse", "nitrosocke/spider-verse-diffusion", "spiderverse style "),
 #  Model("Balloon Art", "Fictiverse/Stable_Diffusion_BalloonArt_Model", "BalloonArt "),
