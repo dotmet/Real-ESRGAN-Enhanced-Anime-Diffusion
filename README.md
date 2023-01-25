@@ -1,7 +1,7 @@
 # Real-ESRGAN-Enhanced-Anime-Diffusion
 Generate high resolution and quality anime pictures from texts or existed images.
 
-(Based on [Anything V3](https://huggingface.co/Linaqruf/anything-v3.0) and [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN))
+(Based on [Anything V4] (https://huggingface.co/andite/anything-v4.0) and [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN))
 
 ### Colab demo : [Demo](https://colab.research.google.com/drive/1HpLkNnBfbrLD6t7cGc2i2gVAwiA_V_qp?usp=sharing)
 
