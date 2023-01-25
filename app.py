@@ -269,8 +269,6 @@ with gr.Blocks(css=css) as demo:
     gr.Markdown('# RealESRGAN enhanced Anime Diffusion')
     gr.Markdown(
         "## Author: [dotmet](https://github.com/dotmet)  Github:[Github](https://github.com/dotmet/Real-ESRGAN-Enhanced-Anime-Diffusion)")
-#     gr.Markdown(
-#         "### You can duplicate this demo on HuggingFace Spaces, click [here](https://huggingface.co/spaces/yangheng/Super-Resolution-Anime-Diffusion?duplicate=true)")
 
     with gr.Row():
         with gr.Column(scale=55):
@@ -346,7 +344,7 @@ username, blurry, artist name, bad feet",
         custom_model_path.change(custom_model_changed, inputs=custom_model_path, outputs=None)
     # n_images.change(lambda n: gr.Gallery().style(grid=[2 if n > 1 else 1], height="auto"), inputs=n_images, outputs=gallery)
 
-    gr.Markdown('''### based on [Anything V3](https://huggingface.co/Linaqruf/anything-v3.0) and [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN)''')
+    gr.Markdown('''### based on [Anything V4](https://huggingface.co/andite/anything-v4.0) and [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN)''')
 
     inputs = [model_name, prompt, guidance, steps, width, height, seed, image, strength, neg_prompt, scale_factor, tile]
     outputs = [image_out, error_output]
